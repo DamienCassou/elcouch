@@ -45,6 +45,7 @@ lint :
 	# Run package-lint to check for packaging mistakes
 	$(BATCH) \
 	--eval "(require 'package-lint)" \
+	--eval "(package--add-to-archive-contents '(libelcouch . [(0 7 0) ((emacs (25 1))) \"Some documentation\" single ()]) \"melpa-stable\")" \
 	-f package-lint-batch-and-exit ${SRCS}
 
 	# Run checkdoc to check Emacs Lisp conventions
