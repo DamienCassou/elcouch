@@ -104,6 +104,11 @@ is asked for an INSTANCE among `elcouch-couchdb-instances'."
       (elcouch-view-document entity)
     (elcouch-list entity)))
 
+(defun elcouch-open-url (url)
+  "Open entity pointed to by URL, a string."
+  (interactive (list (read-from-minibuffer "URL: ")))
+  (elcouch-open (libelcouch-entity-from-url url)))
+
 (defun elcouch-list (entity)
   "Open a buffer showing children of ENTITY."
   (libelcouch-entity-list
