@@ -173,7 +173,7 @@ Use current buffer if BUFFER is nil."
 (defun elcouch-document-delete (document)
   "Delete the CouchDB DOCUMENT."
   (interactive (list elcouch-entity))
-  (when (yes-or-no-p (format "Do you really want to delete %s? " (libelcouch-entity-full-name document)))
+  (when (yes-or-no-p (format "Really delete %s? " (libelcouch-entity-full-name document)))
     (let* ((json-object (save-excursion
                           (goto-char (point-min))
                           (json-read)))
