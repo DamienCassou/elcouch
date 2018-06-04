@@ -95,6 +95,7 @@ is asked for an INSTANCE among `elcouch-couchdb-instances'."
       (elcouch-view-document entity)
     (elcouch-list entity)))
 
+;;;###autoload
 (defun elcouch-open-url (url)
   "Open entity pointed to by URL, a string."
   (interactive (list (read-from-minibuffer "URL: ")))
