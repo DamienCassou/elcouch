@@ -48,15 +48,6 @@
 
 ;;; Helper code
 
-(defun elcouch--choose-instance ()
-  "Ask user for a CouchDB instance among `libelcouch-couchdb-instances'."
-  (let* ((instances (libelcouch-instances))
-         (instance-name (completing-read "CouchDB instance: "
-                                         (mapcar #'libelcouch-entity-name instances)
-                                         nil
-                                         t)))
-    (cl-find instance-name instances :test #'string= :key #'libelcouch-entity-name)))
-
 (cl-defgeneric elcouch--entity-buffer-name (entity)
   "Return a buffer name approapriate for listing the content of ENTITY.")
 
@@ -99,7 +90,7 @@ is asked for an INSTANCE among `elcouch-couchdb-instances'."
   (interactive (list (let ((entity (tabulated-list-get-id)))
                        (if (and entity (libelcouch-named-entity-p entity))
                            entity
-                         (elcouch--choose-instance)))))
+                         (libelcouch-choose-instance)))))
   (if (libelcouch-document-p entity)
       (elcouch-view-document entity)
     (elcouch-list entity)))
