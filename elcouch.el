@@ -121,6 +121,7 @@ is asked for an INSTANCE among `elcouch-couchdb-instances'."
 (defvar elcouch-document-view-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'elcouch-document-save)
+    (define-key map (kbd "C-x C-q") #'elcouch-document-read-only-mode)
     map)
   "Keybindings for `elcouch-document-view-mode'.")
 
@@ -154,7 +155,9 @@ mark are changed to those ones."
        (when saved-point
          (goto-char saved-point))
        (when saved-mark
-         (save-mark-and-excursion--restore saved-mark))))))
+         (save-mark-and-excursion--restore saved-mark))
+       (message "Press %s to edit the document."
+                (substitute-command-keys "\\[elcouch-document-read-only-mode]"))))))
 
 (defun elcouch-document-refresh (&optional buffer)
   "Refresh BUFFER with new document content.
@@ -169,6 +172,16 @@ Use current buffer if BUFFER is nil."
   "Save buffer's document to CouchDB."
   (interactive)
   (libelcouch-document-save elcouch-entity nil #'elcouch-document-refresh))
+
+(defun elcouch-document-read-only-mode ()
+  "Toggle read-only mode in current buffer."
+  (interactive)
+  (call-interactively #'read-only-mode)
+  (if buffer-read-only
+      (message "Press %s to edit the document."
+               (substitute-command-keys "\\[elcouch-document-read-only-mode]"))
+    (message "You can now edit the document. Press %s to send changes to the server."
+             (substitute-command-keys "\\[elcouch-document-save]"))))
 
 (defun elcouch-document-delete (document)
   "Delete the CouchDB DOCUMENT."
