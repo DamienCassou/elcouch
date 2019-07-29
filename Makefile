@@ -1,4 +1,4 @@
-ELPA_DEPENDENCIES=json-mode json-reformat json-snatcher package-lint libelcouch
+ELPA_DEPENDENCIES=json-mode json-reformat json-snatcher package-lint libelcouch navigel
 
 ELPA_ARCHIVES=melpa
 

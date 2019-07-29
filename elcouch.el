@@ -4,7 +4,7 @@
 
 ;; Author: Damien Cassou <damien@cassou.me>
 ;; Url: https://gitlab.petton.fr/DamienCassou/elcouch
-;; Package-requires: ((emacs "25.1") (json-mode "1.0.0") (libelcouch "0.9.0"))
+;; Package-requires: ((emacs "25.1") (json-mode "1.0.0") (libelcouch "0.9.0") (navigel "0.3.0"))
 ;; Version: 0.3.0
 ;; Keywords: data, tools
 
@@ -29,6 +29,7 @@
 
 (require 'tabulated-list)
 (require 'json-mode)
+(require 'navigel)
 
 (require 'libelcouch)
 
@@ -40,83 +41,32 @@
   :group 'externa)
 
 
-;;; Variables
-
-(defvar-local elcouch-entity nil
-  "Remember the CouchDB entity of current buffer.")
-
-
-;;; Helper code
-
-(cl-defgeneric elcouch--entity-buffer-name (entity)
-  "Return a buffer name approapriate for listing the content of ENTITY.")
-
-(cl-defmethod elcouch--entity-buffer-name ((instance libelcouch-instance))
-  (format "*elcouch-dbs: %s" (libelcouch-entity-full-name instance)))
-
-(cl-defmethod elcouch--entity-buffer-name ((database libelcouch-database))
-  (format "*elcouch-docs: %s" (libelcouch-entity-full-name database)))
-
-(cl-defmethod elcouch--entity-buffer-name ((document libelcouch-document))
-  (format "*elcouch-doc: %s" (libelcouch-entity-full-name document)))
-
-(cl-defgeneric elcouch--default-tabulated-list-format (_entity)
-  "Return `tabulated-list-format' value to list children of _ENTITY."
-  (vector (list "Name" 0 t)))
-
-(cl-defgeneric elcouch--entity-to-list-entry ((entity libelcouch-named-entity))
-  "Convert ENTITY to a format suitable for the tabulated list."
-  (list entity
-        (vector (libelcouch-entity-name entity))))
-
-
 ;;; Entity listing code
 
-(defvar elcouch-list-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "RET") #'elcouch-open)
-    map)
-  "Keybindings for `elcouch-list-mode'.")
-
-(define-derived-mode elcouch-list-mode tabulated-list-mode "elcouch"
-  "Major mode for all elcouch listing modes.")
-
 ;;;###autoload
-(defun elcouch-open (entity)
-  "Open a new buffer showing CouchDB ENTITY.
-
-Interactively, ENTITY is either the element at point or the user
-is asked for an INSTANCE among `elcouch-couchdb-instances'."
-  (interactive (list (let ((entity (tabulated-list-get-id)))
-                       (if (and entity (libelcouch-named-entity-p entity))
-                           entity
-                         (libelcouch-choose-instance)))))
-  (if (libelcouch-document-p entity)
-      (elcouch-view-document entity)
-    (elcouch-list entity)))
+(defun elcouch-open (instance)
+  "Open a new buffer listing CouchDB databases of INSTANCE.
+Interactively, the user is asked to select a CouchDB instance from
+`elcouch-couchdb-instances'."
+  (interactive (list (libelcouch-choose-instance)))
+  (elcouch-open-entity instance))
 
 ;;;###autoload
 (defun elcouch-open-url (url)
   "Open entity pointed to by URL, a string."
   (interactive (list (read-from-minibuffer "URL: ")))
-  (elcouch-open (libelcouch-entity-from-url url)))
+  (elcouch-open-entity (libelcouch-entity-from-url url)))
 
-(defun elcouch-list (entity)
-  "Open a buffer showing children of ENTITY."
-  (libelcouch-entity-list
-   entity
-   (lambda (children)
-     (with-current-buffer (get-buffer-create (elcouch--entity-buffer-name entity))
-       (elcouch-list-mode)
-       (setq tabulated-list-format (elcouch--default-tabulated-list-format entity))
-       (tabulated-list-init-header)
-       (setq-local elcouch-entity entity)
-       (setq tabulated-list-entries (mapcar #'elcouch--entity-to-list-entry children))
-       (tabulated-list-print)
-       (switch-to-buffer (current-buffer))))))
+(defun elcouch-open-entity (entity)
+  "Open a buffer showing ENTITY."
+  (let ((navigel-app 'elcouch))
+    (navigel-open entity nil)))
 
 
 ;;; Document view mode
+
+(defvar-local elcouch--document nil
+  "Remember the CouchDB document of current buffer.")
 
 (defvar elcouch-document-view-mode-map
   (let ((map (make-sparse-keymap)))
@@ -147,9 +97,9 @@ mark are changed to those ones."
   (libelcouch-document-content
    document
    (lambda (json-document)
-     (with-current-buffer (get-buffer-create (elcouch--entity-buffer-name document))
+     (with-current-buffer (get-buffer-create (format "*elcouch-doc-%s" (libelcouch-entity-full-name document)))
        (elcouch-document-view-mode)
-       (setq-local elcouch-entity document)
+       (setq-local elcouch--document document)
        (elcouch--document-prepare-buffer json-document)
        (switch-to-buffer (current-buffer))
        (when saved-point
@@ -166,12 +116,12 @@ Use current buffer if BUFFER is nil."
   (with-current-buffer (or buffer (current-buffer))
     (let ((saved-point (point))
           (saved-mark (save-mark-and-excursion--save)))
-      (elcouch-view-document elcouch-entity saved-point saved-mark))))
+      (elcouch-view-document elcouch--document saved-point saved-mark))))
 
 (defun elcouch-document-save ()
   "Save buffer's document to CouchDB."
   (interactive)
-  (libelcouch-document-save elcouch-entity nil #'elcouch-document-refresh))
+  (libelcouch-document-save elcouch--document nil #'elcouch-document-refresh))
 
 (defun elcouch-document-read-only-mode ()
   "Toggle read-only mode in current buffer."
@@ -185,7 +135,7 @@ Use current buffer if BUFFER is nil."
 
 (defun elcouch-document-delete (document)
   "Delete the CouchDB DOCUMENT."
-  (interactive (list elcouch-entity))
+  (interactive (list elcouch--document))
   (when (yes-or-no-p (format "Really delete %s? " (libelcouch-entity-full-name document)))
     (let* ((json-object (save-excursion
                           (goto-char (point-min))
@@ -194,7 +144,31 @@ Use current buffer if BUFFER is nil."
       (libelcouch-document-delete
        document
        revision
-       (lambda () (elcouch-list (libelcouch-entity-parent document)))))))
+       (lambda () (elcouch-open-entity (libelcouch-entity-parent document)))))))
+
+
+;; navigel configuration
+
+(cl-defmethod navigel-name (entity &context (navigel-app elcouch))
+  (libelcouch-entity-name entity))
+
+(cl-defmethod navigel-buffer-name (entity &context (navigel-app elcouch))
+  (libelcouch-entity-full-name entity))
+
+(cl-defmethod navigel-children (entity callback &context (navigel-app elcouch))
+  (libelcouch-entity-list entity callback))
+
+(cl-defmethod navigel-parent (entity &context (navigel-app elcouch))
+  (libelcouch-entity-parent entity))
+
+(cl-defmethod navigel-parent ((_entity libelcouch-instance) &context (navigel-app elcouch))
+  nil)
+
+(cl-defmethod navigel-open ((document libelcouch-document) _target)
+  (elcouch-view-document document))
+
+(cl-defmethod navigel-delete ((document libelcouch-document) &context (navigel-app elcouch) &optional function)
+  (libelcouch-document-delete-latest document function))
 
 (provide 'elcouch)
 ;;; elcouch.el ends here
