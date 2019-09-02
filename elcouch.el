@@ -149,25 +149,25 @@ Use current buffer if BUFFER is nil."
 
 ;; navigel configuration
 
-(cl-defmethod navigel-name (entity &context (navigel-app elcouch))
+(navigel-method elcouch navigel-name (entity)
   (libelcouch-entity-name entity))
 
-(cl-defmethod navigel-buffer-name (entity &context (navigel-app elcouch))
+(navigel-method elcouch navigel-buffer-name (entity)
   (libelcouch-entity-full-name entity))
 
-(cl-defmethod navigel-children (entity callback &context (navigel-app elcouch))
+(navigel-method elcouch navigel-children (entity callback)
   (libelcouch-entity-list entity callback))
 
-(cl-defmethod navigel-parent (entity &context (navigel-app elcouch))
+(navigel-method elcouch navigel-parent (entity)
   (libelcouch-entity-parent entity))
 
-(cl-defmethod navigel-parent ((_entity libelcouch-instance) &context (navigel-app elcouch))
+(navigel-method elcouch navigel-parent ((_entity libelcouch-instance))
   nil)
 
-(cl-defmethod navigel-open ((document libelcouch-document) _target)
+(navigel-method elcouch navigel-open ((document libelcouch-document) _target)
   (elcouch-view-document document))
 
-(cl-defmethod navigel-delete ((document libelcouch-document) &context (navigel-app elcouch) &optional function)
+(navigel-method elcouch navigel-delete ((document libelcouch-document) &optional function)
   (libelcouch-document-delete-latest document function))
 
 (provide 'elcouch)
