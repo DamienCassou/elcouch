@@ -79,7 +79,8 @@ Interactively, the user is asked to select a CouchDB instance from
   "Major mode to view and edit a CouchDB document.")
 
 (defun elcouch--document-prepare-buffer (content)
-  "Insert json CONTENT into current buffer."
+  "Replace content of current buffer with CONTENT.
+CONTENT is a string containing JSON and will be pretty-printed."
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert content)
@@ -172,3 +173,5 @@ Use current buffer if BUFFER is nil."
 
 (provide 'elcouch)
 ;;; elcouch.el ends here
+
+;; LocalWords:  CouchDB
