@@ -4,7 +4,7 @@
 
 ;; Author: Damien Cassou <damien@cassou.me>
 ;; Url: https://gitlab.petton.fr/DamienCassou/elcouch
-;; Package-requires: ((emacs "25.1") (json-mode "1.0.0") (libelcouch "0.9.0") (navigel "0.3.0"))
+;; Package-requires: ((emacs "25.1") (json-mode "1.0.0") (libelcouch "0.10.0") (navigel "0.3.0"))
 ;; Version: 0.3.0
 ;; Keywords: data, tools
 
@@ -168,8 +168,21 @@ Use current buffer if BUFFER is nil."
 (navigel-method elcouch navigel-open ((document libelcouch-document) _target)
   (elcouch-view-document document))
 
+(navigel-method elcouch navigel-open ((view-row libelcouch-view-row) _target)
+  (elcouch-view-document (libelcouch-view-row-document view-row)))
+
 (navigel-method elcouch navigel-delete ((document libelcouch-document) &optional function)
   (libelcouch-document-delete-latest document function))
+
+(navigel-method elcouch navigel-entity-to-columns ((view-row libelcouch-view-row))
+  (vector (or (libelcouch-entity-name view-row) "null")
+          (format "%s" (or (libelcouch-view-row-key view-row) "null"))
+          (format "%s" (or (libelcouch-view-row-value view-row) "null"))))
+
+(navigel-method elcouch navigel-tablist-format ((_view libelcouch-view))
+  (vector (list "id" 20)
+          (list "key" 30)
+          (list "value" 0)))
 
 (provide 'elcouch)
 ;;; elcouch.el ends here
