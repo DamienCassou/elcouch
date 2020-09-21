@@ -79,7 +79,8 @@ Interactively, the user is asked to select a CouchDB instance from
   "Major mode to view and edit a CouchDB document.")
 
 (defun elcouch--document-prepare-buffer (content)
-  "Insert json CONTENT into current buffer."
+  "Replace content of current buffer with CONTENT.
+CONTENT is a string containing JSON and will be pretty-printed."
   (let ((inhibit-read-only t))
     (erase-buffer)
     (insert content)
@@ -149,26 +150,28 @@ Use current buffer if BUFFER is nil."
 
 ;; navigel configuration
 
-(cl-defmethod navigel-name (entity &context (navigel-app elcouch))
+(navigel-method elcouch navigel-name (entity)
   (libelcouch-entity-name entity))
 
-(cl-defmethod navigel-buffer-name (entity &context (navigel-app elcouch))
+(navigel-method elcouch navigel-buffer-name (entity)
   (libelcouch-entity-full-name entity))
 
-(cl-defmethod navigel-children (entity callback &context (navigel-app elcouch))
+(navigel-method elcouch navigel-children (entity callback)
   (libelcouch-entity-list entity callback))
 
-(cl-defmethod navigel-parent (entity &context (navigel-app elcouch))
+(navigel-method elcouch navigel-parent (entity)
   (libelcouch-entity-parent entity))
 
-(cl-defmethod navigel-parent ((_entity libelcouch-instance) &context (navigel-app elcouch))
+(navigel-method elcouch navigel-parent ((_entity libelcouch-instance))
   nil)
 
-(cl-defmethod navigel-open ((document libelcouch-document) _target)
+(navigel-method elcouch navigel-open ((document libelcouch-document) _target)
   (elcouch-view-document document))
 
-(cl-defmethod navigel-delete ((document libelcouch-document) &context (navigel-app elcouch) &optional function)
+(navigel-method elcouch navigel-delete ((document libelcouch-document) &optional function)
   (libelcouch-document-delete-latest document function))
 
 (provide 'elcouch)
 ;;; elcouch.el ends here
+
+;; LocalWords:  CouchDB

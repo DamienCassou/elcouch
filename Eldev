@@ -1,0 +1,10 @@
+; -*- mode: emacs-lisp; lexical-binding: t; no-byte-compile: t -*-
+
+;; Autodetermined by `eldev init'.
+(eldev-use-package-archive 'melpa)
+
+(eldev-use-plugin 'autoloads)
+
+;; Local Variables:
+;; eval: (flycheck-mode -1)
+;; End:
