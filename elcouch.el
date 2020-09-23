@@ -153,6 +153,9 @@ Use current buffer if BUFFER is nil."
 (navigel-method elcouch navigel-name (entity)
   (libelcouch-entity-name entity))
 
+(navigel-method elcouch navigel-tablist-name ((design-document libelcouch-design-document))
+  (format "DESIGN: %s" (libelcouch-entity-name design-document)))
+
 (navigel-method elcouch navigel-buffer-name (entity)
   (libelcouch-entity-full-name entity))
 
