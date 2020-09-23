@@ -182,7 +182,7 @@ Use current buffer if BUFFER is nil."
           (format "%s" (or (libelcouch-view-row-key view-row) "null"))
           (format "%s" (or (libelcouch-view-row-value view-row) "null"))))
 
-(navigel-method elcouch navigel-tablist-format ((_view libelcouch-view))
+(navigel-method elcouch navigel-tablist-format ((view libelcouch-view))
   (vector (list "id" 20)
           (list "key" 30)
           (list "value" 0)))
