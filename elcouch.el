@@ -4,8 +4,8 @@
 
 ;; Author: Damien Cassou <damien@cassou.me>
 ;; Url: https://gitlab.petton.fr/DamienCassou/elcouch
-;; Package-requires: ((emacs "25.1") (json-mode "1.0.0") (libelcouch "0.10.0") (navigel "0.3.0"))
-;; Version: 0.10.0
+;; Package-requires: ((emacs "25.1") (json-mode "1.0.0") (libelcouch "0.11.0") (navigel "0.3.0"))
+;; Version: 0.11.0
 ;; Keywords: data, tools
 
 ;; This program is free software; you can redistribute it and/or modify
