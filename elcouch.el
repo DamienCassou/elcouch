@@ -40,6 +40,61 @@
   "View and manipulate CouchDB databases."
   :group 'externa)
 
+(defcustom elcouch-special-views nil
+  "List of CouchDB view specifications to improve tabulated list rendering."
+  :type 'list)
+
+
+;;; Private helpers
+
+(defconst elcouch--tablist-default-view-row-to-column-converter
+  (lambda (view-row)
+    (vector (or (libelcouch-entity-name view-row) "null")
+            (format "%s" (or (libelcouch-view-row-key view-row) "null"))
+            (format "%s" (or (libelcouch-view-row-value view-row) "null"))))
+  "Cell values representing VIEW-ROW for non-special views.
+This is used for `tabulated-list-entries'.")
+
+(defconst elcouch--tablist-default-format
+  (vector (list "Id" 20)
+          (list "Key" 30)
+          (list "Value" 0))
+  "Column specifications for non-special views.
+This is used for `tabulated-list-format'.")
+
+(defun elcouch--view-to-key (view)
+  "Return a string to match VIEW in `elcouch-special-views'.
+The string is of the form \"DESIGN-DOC/VIEW-NAME\"."
+  (let ((design-document (libelcouch-entity-parent view)))
+    (format "%s/%s"
+            (libelcouch-entity-name design-document)
+            (libelcouch-entity-name view))))
+
+(defun elcouch--tablist-format-for-view (view)
+  "Return a vector of column specifications to represent VIEW.
+This is used for `tabulated-list-format'.
+
+If no specification for VIEW is defined in
+`elcouch-special-views', `elcouch--tablist-default-format' is
+used."
+  (let* ((view-spec (cl-find (elcouch--view-to-key view) elcouch-special-views :key #'car :test #'string=))
+         (view-format (cadr view-spec)))
+    (or (and view-format (funcall view-format view))
+        elcouch--tablist-default-format)))
+
+(defun elcouch--tablist-view-row-to-columns (view-row)
+  "Return a vector of cells to represent VIEW-ROW in a tabulated list.
+This is used for `tabulated-list-entries'.
+
+If no specification for VIEW-ROW's view is defined in
+`elcouch-special-views',
+`elcouch--tablist-default-view-row-to-column-converter' is used."
+  (let* ((view (libelcouch-entity-parent view-row))
+         (view-spec (cl-find (elcouch--view-to-key view) elcouch-special-views :key #'car :test #'string=))
+         (view-row-to-column-converter (cddr view-spec))
+         (converter (or view-row-to-column-converter elcouch--tablist-default-view-row-to-column-converter)))
+    (funcall converter view-row)))
+
 
 ;;; Entity listing code
 
@@ -153,6 +208,12 @@ Use current buffer if BUFFER is nil."
 (navigel-method elcouch navigel-name (entity)
   (libelcouch-entity-name entity))
 
+(navigel-method elcouch navigel-tablist-name ((design-document libelcouch-design-document))
+  (format "DESIGN: %s" (libelcouch-entity-name design-document)))
+
+(navigel-method elcouch navigel-imenu-name ((design-document libelcouch-design-document))
+  (format "DESIGN: %s" (libelcouch-entity-name design-document)))
+
 (navigel-method elcouch navigel-buffer-name (entity)
   (libelcouch-entity-full-name entity))
 
@@ -175,14 +236,11 @@ Use current buffer if BUFFER is nil."
   (libelcouch-document-delete-latest document function))
 
 (navigel-method elcouch navigel-entity-to-columns ((view-row libelcouch-view-row))
-  (vector (or (libelcouch-entity-name view-row) "null")
-          (format "%s" (or (libelcouch-view-row-key view-row) "null"))
-          (format "%s" (or (libelcouch-view-row-value view-row) "null"))))
+  (elcouch--tablist-view-row-to-columns view-row))
 
-(navigel-method elcouch navigel-tablist-format ((_view libelcouch-view))
-  (vector (list "id" 20)
-          (list "key" 30)
-          (list "value" 0)))
+(navigel-method elcouch navigel-tablist-format ((view libelcouch-view))
+  (elcouch--tablist-format-for-view view))
+
 
 (provide 'elcouch)
 ;;; elcouch.el ends here
