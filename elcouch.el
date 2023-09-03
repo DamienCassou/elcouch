@@ -1,6 +1,6 @@
 ;;; elcouch.el --- View and manipulate CouchDB databases  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2018  Damien Cassou
+;; Copyright (C) 2018-2023  Damien Cassou
 
 ;; Author: Damien Cassou <damien@cassou.me>
 ;; Url: https://gitlab.petton.fr/DamienCassou/elcouch
