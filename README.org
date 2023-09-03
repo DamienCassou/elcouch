@@ -10,8 +10,8 @@
           <img alt="MELPA" src="https://melpa.org/packages/elcouch-badge.svg"/>
         </a>
 
-        <a href="https://gitlab.petton.fr/elcouch/elcouch/commits/master">
-          <img alt="pipeline status" src="https://gitlab.petton.fr/elcouch/elcouch/badges/master/pipeline.svg" />
+        <a href="https://github.com/DamienCassou/elcouch/actions">
+          <img alt="pipeline status" src="https://github.com/DamienCassou/elcouch/actions/workflows/test.yml/badge.svg" />
         </a>
       </p>
   #+END_HTML
@@ -20,11 +20,11 @@
 
 [[https://couchdb.apache.org/][CouchDB]] is a free open-source database software. The Emacs package
 elcouch makes it possible to view and manipulate CouchDB databases. It
-depends on [[https://gitlab.petton.fr/elcouch/libelcouch][libelcouch]].
+depends on [[https://github.com/DamienCassou/libelcouch][libelcouch]].
 
 ** License
 
-See [[file:COPYING][COPYING]]. Copyright (c) 2018 Damien Cassou.
+See [[file:COPYING][COPYING]]. Copyright (c) 2018-2023 Damien Cassou.
 
   #+BEGIN_HTML
   <a href="https://liberapay.com/DamienCassou/donate">
